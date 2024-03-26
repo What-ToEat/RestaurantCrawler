@@ -48,6 +48,11 @@ def scoroll_menu_list(scroll_cnt):
         driver.execute_script("arguments[0].scrollTop += 600;", scrollable_element)
         sleep(0.5)  # 동적 콘텐츠 로드 시간에 따라 조절
 
+def print_restaurant_name(restaurant_elements):
+    for index, e in enumerate(restaurant_elements, start=1):
+        final_element = e.find_element(By.CLASS_NAME,'CHC5F').find_element(By.XPATH, ".//a/div/div/span")
+        print(str(index) + ". " + final_element.text)
+
 while(loop):
     switch_left()
  
@@ -55,20 +60,6 @@ while(loop):
     # 이건 페이지 넘어갈때마다 계속 확인해줘야 함 (페이지 새로 로드 될때마다 버튼 상태 값이 바뀜)
     next_page = driver.find_element(By.XPATH,'//*[@id="app-root"]/div/div[2]/div[2]/a[7]').get_attribute('aria-disabled')
 
-    # ############## 맨 밑까지 스크롤 ##############
-    # scrollable_element = driver.find_element(By.CLASS_NAME, "Ryr1F")
- 
-    # # last_height = driver.execute_script("return arguments[0].scrollHeight", scrollable_element)
- 
-    # # while True:
-    # for i in range(5): # 특정 장소에서 전체 스크롤 못하는 경우가 있어 강제로 스크롤 시키게 수정함 (끝까지 안나오는 경우 반복횟수 증가)
-    #     # 요소 내에서 아래로 600px 스크롤
-    #     driver.execute_script("arguments[0].scrollTop += 600;", scrollable_element)
-    #     # 페이지 로드를 기다림
-    #     sleep(0.5)  # 동적 콘텐츠 로드 시간에 따라 조절
-    #     # 새 높이 계산
-    #     # new_height = driver.execute_script("return arguments[0].scrollHeight", scrollable_element)
-    #     # last_height = new_height
     scoroll_menu_list(5)
  
     ############## 현재 page number 가져오기 - 1 페이지 ##############
@@ -80,10 +71,10 @@ while(loop):
 
     print('현재 ' + '\033[95m' + str(page_no) + '\033[0m' + ' 페이지 / '+ '총 ' + '\033[95m' + str(len(elemets)) + '\033[0m' + '개의 가게를 찾았습니다.\n')
     
-    for index, e in enumerate(elemets, start=1):
-        final_element = e.find_element(By.CLASS_NAME,'CHC5F').find_element(By.XPATH, ".//a/div/div/span")
-        print(str(index) + ". " + final_element.text)
- 
+    # for index, e in enumerate(elemets, start=1):
+    #     final_element = e.find_element(By.CLASS_NAME,'CHC5F').find_element(By.XPATH, ".//a/div/div/span")
+    #     print(str(index) + ". " + final_element.text)
+    print_restaurant_name(elemets)
  
     switch_left()
  
