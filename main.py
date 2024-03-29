@@ -68,21 +68,17 @@ def click_review(review, restaurant_info):
     if len(review) > 2:
         _index += 1 
     restaurant_info.find_element(By.XPATH,f'.//div[2]/span[{_index}]/a').click()
-    sleep(1)
+
 
 def parse_review_tag():
-    switch_right()
-    review_tags = []
-
     while True:
         try:
             driver.find_element(By.XPATH, '/html/body/div[3]/div/div/div/div[5]/div[3]/div[1]/div/div/div[2]/a[1]').click()
-            sleep(0.5)
+            # sleep(0.5)
         except:
             break
-
     review_tag_elements = driver.find_elements(By.XPATH, '/html/body/div[3]/div/div/div/div[6]/div[3]/div[1]/div/div/div[2]/ul/li')
-    
+    review_tags = []
     for elem in review_tag_elements:
         review_tag_name = elem.find_element(By.CLASS_NAME, 't3JSf').text
         review_tag_cnt = int(elem.find_element(By.CLASS_NAME, 'CUoLy').text.split('\n')[1])
@@ -93,22 +89,36 @@ def click_more_button(elem):
         try:
             more_button = elem.find_element(By.CLASS_NAME, 'rvCSr')
             more_button.click()
-        except:
+        except e:
+            print(e.accessible_name)
             pass
 
-def parse_user_review(page_bound):
-    switch_right()
-    user_reviews = []
+def click_other(page_bound):
+    while True:
+        try:
+            driver.find_element(By.XPATH, '/html/body/div[3]/div/div/div/div[5]/div[3]/div[1]/div/div/div[2]/a[1]').click()
+            sleep(0.5)
+        except:
+            break
     for _ in range(page_bound):
         try:
             driver.find_element(By.XPATH, '/html/body/div[3]/div/div/div/div[6]/div[3]/div[3]/div[2]/div/a').click()
-            sleep(0.2)
+            sleep(1)
+        except:
+            break
+
+
+def parse_user_review(page_bound):
+    for _ in range(page_bound):
+        try:
+            driver.find_element(By.XPATH, '/html/body/div[3]/div/div/div/div[6]/div[3]/div[3]/div[2]/div/a').click()
+            sleep(1)
         except:
             break
     user_review_elements = driver.find_elements(By.XPATH, '/html/body/div[3]/div/div/div/div[6]/div[3]/div[3]/div[1]/ul/li')
-    
+    user_reviews = []
     for elem in user_review_elements:
-        # click_more_button(elem) # 더보기 버튼 누르기 (이거 하면 많이 느려짐)
+        # click_more_button(elem)
         user_review = elem.find_element(By.CLASS_NAME, 'zPfVt').text
         user_reviews.append(user_review)
     return user_reviews
@@ -116,24 +126,32 @@ def parse_user_review(page_bound):
 def parse_restaurant_info(index, e):
     store_name = '' # 가게 이름
     category = '' # 카테고리
-
+    new_open = '' # 새로 오픈
+    
+    rating = 0.0 # 평점
+    visited_review = 0 # 방문자 리뷰
+    blog_review = 0 # 블로그 리뷰
     store_id = '' # 가게 고유 번호
+    
     address = '' # 가게 주소
+    business_hours = [] # 영업 시간
     phone_num = '' # 전화번호
 
     click_restaurant_detail(e)
 
-    restaurant_info = driver.find_element(By.XPATH,'//div[@class="zD5Nm undefined"]')
-    store_name = restaurant_info.find_element(By.XPATH,'.//div[1]/div[1]/span[1]').text
-    category = restaurant_info.find_element(By.XPATH,'.//div[1]/div[1]/span[2]').text
+    title = driver.find_element(By.XPATH,'//div[@class="zD5Nm undefined"]')
+    store_info = title.find_elements(By.XPATH,'//div[@class="YouOG DZucB"]/div/span')
+    store_name = title.find_element(By.XPATH,'.//div[1]/div[1]/span[1]').text
+    category = title.find_element(By.XPATH,'.//div[1]/div[1]/span[2]').text
+    review = title.find_elements(By.XPATH,'.//div[2]/span')
     store_id = driver.find_element(By.XPATH,'//div[@class="flicking-camera"]/a').get_attribute('href').split('/')[4]
     address = driver.find_element(By.XPATH,'//span[@class="LDgIH"]').text
     phone_num = driver.find_element(By.XPATH,'//span[@class="xlx7Q"]').text
 
-    review = restaurant_info.find_elements(By.XPATH,'.//div[2]/span')
-    rating, visited_review, blog_review = parse_review_info(review, restaurant_info)
+    rating, visited_review, blog_review = parse_review_info(review, title)
 
-    click_review(review, restaurant_info)
+    click_review(review, title)
+
     review_tags = parse_review_tag()
     user_reviews = parse_user_review(page_bound=REVIEW_PAGE_BOUND)
 
@@ -149,7 +167,7 @@ loop = True
  
 SEARCH = '건대 식당'
 SCROLL_BOUND = 5
-REVIEW_PAGE_BOUND = 1
+REVIEW_PAGE_BOUND = 5
 driver.get(url='https://map.naver.com/p/search/' + SEARCH)
 
 while(loop):
