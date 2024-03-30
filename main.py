@@ -1,3 +1,4 @@
+import re
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium import webdriver
@@ -30,12 +31,13 @@ def print_page_info(elemets):
     page_no = driver.find_element(By.XPATH,'//a[contains(@class, "mBN2s qxokY")]').text
     print('현재 ' + '\033[95m' + str(page_no) + '\033[0m' + ' 페이지 / '+ '총 ' + '\033[95m' + str(len(elemets)) + '\033[0m' + '개의 가게를 찾았습니다.\n')
 
-def print_result(index, store_name, category, rating, visited_review, blog_review, store_id, address, phone_num, review_tags, user_reviews):
+def print_result(index, store_name, category, rating, visited_review, blog_review, store_id, address, phone_num, image_url, review_tags, user_reviews):
     print(f'{index}. ' + str(store_name) + ' · ' + str(category))
     print('평점 ' + str(rating) + ' / ' + visited_review + ' · ' + blog_review)
     print(f'가게 고유 번호 -> {store_id}')
     print('가게 주소 ' + str(address))
     print('가게 번호 ' + phone_num)
+    print('이미지 주소 ', image_url)
     print("-"*50)
     print(review_tags)
     print(user_reviews)
@@ -123,6 +125,17 @@ def parse_user_review(page_bound):
         user_reviews.append(user_review)
     return user_reviews
 
+def parse_image_url():
+    try:
+        attribute = driver.find_element(By.CLASS_NAME, 'K0PDV').get_attribute('style')
+        pattern = r'background-image: url\("([^"]+)"\)'
+        match = re.search(pattern, attribute)
+        image_url = match.group(1)
+        # print(image_url)
+        return image_url
+    except:
+        return ''
+
 def parse_restaurant_info(index, e):
     store_name = '' # 가게 이름
     category = '' # 카테고리
@@ -140,6 +153,8 @@ def parse_restaurant_info(index, e):
     click_restaurant_detail(e)
 
     title = driver.find_element(By.XPATH,'//div[@class="zD5Nm undefined"]')
+    # image = driver.find_element(By.CLASS_NAME, 'K0PDV').get_attribute('style')
+    image_url = parse_image_url()
     store_info = title.find_elements(By.XPATH,'//div[@class="YouOG DZucB"]/div/span')
     store_name = title.find_element(By.XPATH,'.//div[1]/div[1]/span[1]').text
     category = title.find_element(By.XPATH,'.//div[1]/div[1]/span[2]').text
@@ -155,7 +170,7 @@ def parse_restaurant_info(index, e):
     review_tags = parse_review_tag()
     user_reviews = parse_user_review(page_bound=REVIEW_PAGE_BOUND)
 
-    print_result(index, store_name, category, rating, visited_review, blog_review, store_id, address, phone_num, review_tags, user_reviews)
+    print_result(index, store_name, category, rating, visited_review, blog_review, store_id, address, phone_num, image_url, review_tags, user_reviews)
 
 options = webdriver.ChromeOptions()
 options.add_argument('user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3')
