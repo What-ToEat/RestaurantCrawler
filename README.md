@@ -1,5 +1,10 @@
 # RestaurantCrawler
 
+네이버 지도에서 식당 정보와 리뷰를 긁어오는 크롤러
+
+- 네이버 지도가 동적 페이지라 selenium을 사용
+- csv 형식으로 저장
+
 ## 사용법
 
 1. `pip install selenium pandas`
