@@ -83,7 +83,7 @@ def click_review(review, restaurant_info):
 
 
 def parse_review_tag():
-    while True:
+    for i in range(7):
         try:
             driver.find_element(By.XPATH, '/html/body/div[3]/div/div/div/div[5]/div[3]/div[1]/div/div/div[2]/a[1]').click()
             # sleep(0.5)
