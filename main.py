@@ -3,6 +3,13 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium import webdriver
 from time import sleep
+import pandas as pd
+
+SEARCHES = ['건대 카폐', '건대 식당']
+LOCATE = "건대"
+# SEARCH = '건대 식당'
+SCROLL_BOUND = 20
+REVIEW_PAGE_BOUND = 5
  
 def switch_left():
     driver.switch_to.parent_frame()
@@ -33,7 +40,7 @@ def print_page_info(elemets):
 
 def print_result(index, store_name, category, rating, visited_review, blog_review, store_id, address, phone_num, image_url, review_tags, user_reviews):
     print(f'{index}. ' + str(store_name) + ' · ' + str(category))
-    print('평점 ' + str(rating) + ' / ' + visited_review + ' · ' + blog_review)
+    print('평점 ' + str(rating) + ' / ' + str(visited_review) + ' · ' + str(blog_review))
     print(f'가게 고유 번호 -> {store_id}')
     print('가게 주소 ' + str(address))
     print('가게 번호 ' + phone_num)
@@ -48,19 +55,22 @@ def click_restaurant_detail(e):
     sleep(2)
     switch_right()
 
+def parse_review_count(str):
+    return int(str.split(" ")[1].replace(",", ""))
+
 def parse_review_info(review, restaurant_info):
     rating, visited_review, blog_review = 0.0, 0, 0
     _index = 1
     if len(review) > 2:
         rating_xpath = f'.//div[2]/span[{_index}]'
         rating_element = restaurant_info.find_element(By.XPATH, rating_xpath)
-        rating = rating_element.text.replace("\n", " ")
+        rating = rating_element.text.split("\n")[1]
         _index += 1
 
     try:
-        visited_review = restaurant_info.find_element(By.XPATH,f'.//div[2]/span[{_index}]/a').text
+        visited_review = parse_review_count(restaurant_info.find_element(By.XPATH,f'.//div[2]/span[{_index}]/a').text)
         _index += 1
-        blog_review = restaurant_info.find_element(By.XPATH,f'.//div[2]/span[{_index}]/a').text
+        blog_review = parse_review_count(restaurant_info.find_element(By.XPATH,f'.//div[2]/span[{_index}]/a').text)
     except:
         print('------------ 리뷰 부분 오류 ------------')
     return rating, visited_review, blog_review
@@ -88,12 +98,11 @@ def parse_review_tag():
     return review_tags
 
 def click_more_button(elem):
-        try:
-            more_button = elem.find_element(By.CLASS_NAME, 'rvCSr')
-            more_button.click()
-        except e:
-            print(e.accessible_name)
-            pass
+    try:
+        more_button = elem.find_element(By.CLASS_NAME, 'rvCSr')
+        more_button.click()
+    except:
+        pass
 
 def click_other(page_bound):
     while True:
@@ -120,8 +129,10 @@ def parse_user_review(page_bound):
     user_review_elements = driver.find_elements(By.XPATH, '/html/body/div[3]/div/div/div/div[6]/div[3]/div[3]/div[1]/ul/li')
     user_reviews = []
     for elem in user_review_elements:
-        # click_more_button(elem)
         user_review = elem.find_element(By.CLASS_NAME, 'zPfVt').text
+        if user_review.endswith("..."):
+            click_more_button(elem)
+            user_review = elem.find_element(By.CLASS_NAME, 'zPfVt').text
         user_reviews.append(user_review)
     return user_reviews
 
@@ -131,7 +142,6 @@ def parse_image_url():
         pattern = r'background-image: url\("([^"]+)"\)'
         match = re.search(pattern, attribute)
         image_url = match.group(1)
-        # print(image_url)
         return image_url
     except:
         return ''
@@ -153,7 +163,6 @@ def parse_restaurant_info(index, e):
     click_restaurant_detail(e)
 
     title = driver.find_element(By.XPATH,'//div[@class="zD5Nm undefined"]')
-    # image = driver.find_element(By.CLASS_NAME, 'K0PDV').get_attribute('style')
     image_url = parse_image_url()
     store_info = title.find_elements(By.XPATH,'//div[@class="YouOG DZucB"]/div/span')
     store_name = title.find_element(By.XPATH,'.//div[1]/div[1]/span[1]').text
@@ -169,8 +178,9 @@ def parse_restaurant_info(index, e):
 
     review_tags = parse_review_tag()
     user_reviews = parse_user_review(page_bound=REVIEW_PAGE_BOUND)
-
-    print_result(index, store_name, category, rating, visited_review, blog_review, store_id, address, phone_num, image_url, review_tags, user_reviews)
+    data = {"name": store_name, "category": category, "rating": rating, "visited_review": visited_review, "blog_review": blog_review, "store_id": store_id, "address": address, "phone_num": phone_num, "image_url": image_url, "locate": LOCATE, "review_tags": review_tags, "user_reviews": user_reviews}
+    # print_result(index, store_name, category, rating, visited_review, blog_review, store_id, address, phone_num, image_url, review_tags, user_reviews)
+    return data
 
 options = webdriver.ChromeOptions()
 options.add_argument('user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3')
@@ -178,29 +188,33 @@ options.add_argument('window-size=1380,900')
 
 driver = webdriver.Chrome(options=options)
 driver.implicitly_wait(time_to_wait=3)
-loop = True
- 
-SEARCH = '건대 식당'
-SCROLL_BOUND = 5
-REVIEW_PAGE_BOUND = 5
-driver.get(url='https://map.naver.com/p/search/' + SEARCH)
 
-while(loop):
-    scoroll_menu_list(SCROLL_BOUND)
-    elemets = driver.find_elements(By.XPATH,'//*[@id="_pcmap_list_scroll_container"]//li')
-    print_page_info(elemets)
-    print_restaurant_name(elemets)
-    sleep(2)
- 
-    for index, e in enumerate(elemets, start=1):
-        try:
-            parse_restaurant_info(index, e)
-        except Exception as e:
-            print(e)
-            # pass
-    switch_left()
-    next_page = driver.find_element(By.XPATH,'//*[@id="app-root"]/div/div[2]/div[2]/a[7]').get_attribute('aria-disabled')
-    if(next_page == 'false'):
-        driver.find_element(By.XPATH,'//*[@id="app-root"]/div/div[2]/div[2]/a[7]').click()
-    else:
-        loop = False
+for search in SEARCHES:
+    loop = True
+    driver.get(url='https://map.naver.com/p/search/' + search)
+    restaurant_data = []
+    while(loop):
+        scoroll_menu_list(SCROLL_BOUND)
+        elemets = driver.find_elements(By.XPATH,'//*[@id="_pcmap_list_scroll_container"]//li')
+        page_no = driver.find_element(By.XPATH,'//a[contains(@class, "mBN2s qxokY")]').text
+        print_page_info(elemets)
+        # print_restaurant_name(elemets)
+        sleep(2)
+
+        for index, e in enumerate(elemets, start=1):
+            try:
+                data = parse_restaurant_info(index, e)
+                restaurant_data.append(data)
+                pd.DataFrame(restaurant_data).to_csv("restaurants/" + search + ".csv", index=False)
+                print('[' + search + '] 현재페이지 : 6/' + str(page_no) + ' //  식당 : ', index)
+            except:
+                print('>>>>>>>>>>Error<<<<<<<<<')
+
+        switch_left()
+        next_page = driver.find_element(By.XPATH,'//*[@id="app-root"]/div/div[2]/div[2]/a[7]').get_attribute('aria-disabled')
+        if(next_page == 'false'):
+            driver.find_element(By.XPATH,'//*[@id="app-root"]/div/div[2]/div[2]/a[7]').click()
+        else:
+            loop = False
+
+    pd.DataFrame(restaurant_data).to_csv("./restaurants/" + search + ".csv", index=False)
