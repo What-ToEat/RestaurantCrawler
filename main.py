@@ -5,7 +5,7 @@ from selenium import webdriver
 from time import sleep
 import pandas as pd
 
-SEARCHES = ['건대 카폐', '건대 식당']
+SEARCHES = ['건대 식당', '건대 카폐']
 LOCATE = "건대"
 # SEARCH = '건대 식당'
 SCROLL_BOUND = 20
@@ -182,14 +182,15 @@ def parse_restaurant_info(index, e):
     # print_result(index, store_name, category, rating, visited_review, blog_review, store_id, address, phone_num, image_url, review_tags, user_reviews)
     return data
 
-options = webdriver.ChromeOptions()
-options.add_argument('user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3')
-options.add_argument('window-size=1380,900')
 
-driver = webdriver.Chrome(options=options)
-driver.implicitly_wait(time_to_wait=3)
 
 for search in SEARCHES:
+    options = webdriver.ChromeOptions()
+    options.add_argument('user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3')
+    options.add_argument('window-size=1380,900')
+
+    driver = webdriver.Chrome(options=options)
+    driver.implicitly_wait(time_to_wait=3)
     loop = True
     driver.get(url='https://map.naver.com/p/search/' + search)
     restaurant_data = []
