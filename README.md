@@ -5,7 +5,7 @@
 - 네이버 지도가 동적 페이지라 selenium을 사용
 - csv 형식으로 저장
 
-## 사용법
+## crawler 사용법
 
 1. `pip install selenium pandas`
 2. root 경로에 `restaurants` 폴더 생성
@@ -15,6 +15,12 @@
    - `REVIEW_PAGE_BOUND` : 방문자리뷰를 얼마나 가져올지, 1번에 더보기 한번을 누른다. (기본으로 10개, REVIEW_PAGE_BOUND 1개 당 10 추가)
    - `LOCATE` : 본인이 크롤링하려는 지역 ex) 건대, 홍대, 강남, 신촌 등..
 4. 실행
+
+## (중복제거) duplicateX.py 사용법
+
+1. 중복 제거할 파일들이 있는 폴더가 restaurants 에 있으면 바로 실행시키면 됨.
+2. 만약 중복 제거 폴더가 restaurants 가 아니면 4번째줄의 `reading_dir` 에 폴더명 작성하면 된다.
+3. 그냥 파일을 실행시키면 중복이 제거된 final.csv 파일이 생성된다.
 
 ## 주의사항
 
