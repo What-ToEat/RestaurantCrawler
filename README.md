@@ -16,11 +16,12 @@
    - `LOCATE` : 본인이 크롤링하려는 지역 ex) 건대, 홍대, 강남, 신촌 등..
 4. 실행
 
-## (중복제거) duplicateX.py 사용법 (4/4 update)
+## (중복제거) duplicateX.py 사용법 (4/11 update)
 
 1. 중복 제거할 파일들이 있는 폴더가 restaurants 에 있으면 파일을 바로 실행시키면 됨.
 2. 만약 중복 제거 폴더가 restaurants 가 아니면 4번째줄의 `reading_dir` 에 폴더명 작성하면 된다.
 3. 파일을 실행시키면 중복이 제거된 final.csv 파일이 생성된다.
+4. targetArea 에 해당 지역의 구를 작성한다. 다른 지역의 데이터 포함 방지
 
 ## 주의사항
 

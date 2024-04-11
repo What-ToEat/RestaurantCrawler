@@ -2,7 +2,8 @@ import os
 import csv
 
 reading_dir = "restaurants" # 중복을 제거할 파일들이 있는 디렉토리
-
+targetArea = "광진구"
+# 잠실 -> 송파구 , 건대 -> 광진구 , 홍대 -> 마포구 , 강남 -> 강남구
 dupX = set()
 newData = []
 fileList = os.listdir(reading_dir)
@@ -18,8 +19,7 @@ for file in fileList:
 
     for line in reader:
         restaurant_id = line[5]
-        if restaurant_id in dupX:
-            print(fileName , line[0] , i)
+        if restaurant_id in dupX or targetArea not in line[6]:
             continue
         else:
             dupX.add(restaurant_id)
